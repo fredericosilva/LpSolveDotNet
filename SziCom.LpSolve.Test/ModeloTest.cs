@@ -22,17 +22,63 @@ namespace UnitTestProject1
 
             var objetivo = 20000 * x + 15000 * y;
 
-            m.AddRestriction(r1, "R1");
-            m.AddRestriction(r2, "R1");
-            m.AddRestriction(r3, "R1");
-            m.AddRestriction(r4, "R1");
+            // Variables to store bound constraint results and duals
+            double r1Result = 0, r1Dual = 0, r1DualFrom = 0, r1DualTill = 0;
+            double r2Result = 0, r2Dual = 0, r2DualFrom = 0, r2DualTill = 0;
+            double r3Result = 0, r3Dual = 0, r3DualFrom = 0, r3DualTill = 0;
+            double r4Result = 0, r4Dual = 0, r4DualFrom = 0, r4DualTill = 0;
+
+            // Add restrictions with binding for results and duals
+            m.AddRestriction(r1, "R1", result => r1Result = result, (dual, dualFrom, dualTill) => { r1Dual = dual; r1DualFrom = dualFrom; r1DualTill = dualTill; });
+            m.AddRestriction(r2, "R2", result => r2Result = result, (dual, dualFrom, dualTill) => { r2Dual = dual; r2DualFrom = dualFrom; r2DualTill = dualTill; });
+            m.AddRestriction(r3, "R3", result => r3Result = result, (dual, dualFrom, dualTill) => { r3Dual = dual; r3DualFrom = dualFrom; r3DualTill = dualTill; });
+            m.AddRestriction(r4, "R4", result => r4Result = result, (dual, dualFrom, dualTill) => { r4Dual = dual; r4DualFrom = dualFrom; r4DualTill = dualTill; });
 
             m.AddObjetiveFuction(objetivo, "Max", LinearOptmizationType.Maximizar);
 
-            m.Run();
+            var modelResult = m.Run();
+
+            Assert.AreEqual(850000.0, modelResult.OptimizationFunctionResult, 0.1);
 
             Assert.AreEqual(20.0, x.Result, 0.1);
             Assert.AreEqual(30.0, y.Result, 0.1);
+
+            // "Reduced costs" (dual values) for variables must be 0 if they are used in the solution
+            Assert.IsTrue(x.DualValue == 0);
+            Assert.IsTrue(y.DualValue == 0);
+
+            // Assertions for constraint results (slack/surplus values)
+            Assert.AreEqual(80.0, r1Result, 0.1, "R1 constraint should be tight");
+            Assert.AreEqual(120.0, r2Result, 0.1, "R2 constraint should be tight");
+            Assert.AreEqual(20.0, r3Result, 0.1, "R3 constraint result should equal X value");
+            Assert.AreEqual(30.0, r4Result, 0.1, "R4 constraint result should equal Y value");
+
+            // "Shadow prices" (dual values) with from-till limits for constraints that are tight
+            Assert.AreEqual(1250.0, r1Dual, 0.1);
+            Assert.AreEqual(40.0, r1DualFrom, 0.1);
+            Assert.AreEqual(120.0, r1DualTill, 0.1);
+
+            Assert.AreEqual(6250.0, r2Dual, 0.1);
+            Assert.AreEqual(80.0, r2DualFrom, 0.1);
+            Assert.AreEqual(240.0, r2DualTill, 0.1);
+
+            // Assert OptimizationFunctionResult variation (based on duals) when restriction RHS changes
+            var originalR2Dual = r2Dual;
+            
+            Model m2 = new Model();
+            r2 = 3 * x + 2 * y <= 130; // Increase RHS of r2 by 10, still on duals from-till range
+
+            m2.AddNewVariable<string>("", "X");
+            m2.AddNewVariable<string>("", "Y");
+            m2.AddRestriction(r1, "R1", result => r1Result = result, (dual, dualFrom, dualTill) => { r1Dual = dual; r1DualFrom = dualFrom; r1DualTill = dualTill; });
+            m2.AddRestriction(r2, "R2", result => r2Result = result, (dual, dualFrom, dualTill) => { r2Dual = dual; r2DualFrom = dualFrom; r2DualTill = dualTill; });
+            m2.AddRestriction(r3, "R3", result => r3Result = result, (dual, dualFrom, dualTill) => { r3Dual = dual; r3DualFrom = dualFrom; r3DualTill = dualTill; });
+            m2.AddRestriction(r4, "R4", result => r4Result = result, (dual, dualFrom, dualTill) => { r4Dual = dual; r4DualFrom = dualFrom; r4DualTill = dualTill; });
+            m2.AddObjetiveFuction(objetivo, "Max", LinearOptmizationType.Maximizar);
+            
+            modelResult = m2.Run();
+            
+            Assert.AreEqual(850000.0 + 10 * originalR2Dual, modelResult.OptimizationFunctionResult, 0.1); // New optimal value should reflect the increase in RHS of r2 multiplied by its original dual value
         }
 
 

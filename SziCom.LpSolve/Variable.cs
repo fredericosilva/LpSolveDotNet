@@ -10,6 +10,7 @@ namespace SziCom.LpSolve
         {
             this.ValueObject = valueObject;
         }
+        
         public Variable(T valueObject, Action<T, double> bindResult, int index, string name, bool binary = false) : this(valueObject, index, name, binary)
         {
             this.BindResult = bindResult;
@@ -28,16 +29,24 @@ namespace SziCom.LpSolve
 
         }
 
-        internal override void SetResult(double result, double from, double till)
+        public Variable(T valueObject, Action<T, double> result, Action<T, double, double> tillFrom, Action<T, double, double, double> duals, int index, Func<T, string> name) 
+            : this(valueObject, result, tillFrom, index, name)
         {
-            base.SetResult(result, from, till);
-            if (BindResult != null) BindResult(ValueObject, result);
-            if (BindTillFrom != null) BindTillFrom(ValueObject, from, till);
+            this.BindDuals = duals;
+        }
+
+        internal override void SetResult(double result, double from, double till, double dual, double dualFrom, double dualTill)
+        {
+            base.SetResult(result, from, till, dual, dualFrom, dualTill);
+            BindResult?.Invoke(ValueObject, result);
+            BindTillFrom?.Invoke(ValueObject, from, till);
+            BindDuals?.Invoke(ValueObject, dual, dualFrom, dualTill);
         }
 
         public T ValueObject { get; }
         internal Action<T, double> BindResult { get; }
         internal Action<T, double, double> BindTillFrom { get; }
+        internal Action<T, double, double, double> BindDuals { get; }
 
 
     }
