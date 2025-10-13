@@ -8,9 +8,9 @@ namespace SziCom.LpSolve
     public class Model
     {
         private readonly Dictionary<int, AbstractVariable> Variables = new Dictionary<int, AbstractVariable>();
+        public readonly Dictionary<int, Restriccion> Restricciones = new Dictionary<int, Restriccion>();
         public LinearOptimizacionFunction Objetivo { get; private set; }
-        public List<Restriccion> Restricciones { get; private set; } = new List<Restriccion>();
-        public int RestrictionIndex { get; private set; } = 1;
+        public int RestrictionIndex { get; private set; }
         public int VariablesIndex { get; private set; }
 
         public Variable<T> AddNewVariable<T>(T valueObject, string nombre, Action<T, double> bind, bool binary = false) where T : class
@@ -82,6 +82,17 @@ namespace SziCom.LpSolve
             return result;
         }
 
+        public IEnumerable<Variable<T>> AddNewVariables<T>(IEnumerable<T> collection, Func<T, string> nameFunction, Action<T, double> bindResult, Action<T, double, double> tillFrom, Action<T, double, double, double> duals)
+        {
+            var result = new List<Variable<T>>();
+            foreach (var item in collection)
+            {
+                var variable = new Variable<T>(item, bindResult, tillFrom, duals, ++VariablesIndex, nameFunction);
+                Variables.Add(variable.Index, variable);
+                result.Add(variable);
+            }
+            return result;
+        }
 
         public void AddObjetiveFuction(Term term, string nombreRestriccion, LinearOptmizationType funcion)
         {
@@ -94,15 +105,18 @@ namespace SziCom.LpSolve
 
         public void AddRestriction(FinalTerm terms, string nombreRestriccion)
         {
-            Restricciones.Add(new Restriccion(terms, nombreRestriccion, ++RestrictionIndex));
+            var restriccion = new Restriccion(terms, nombreRestriccion, ++RestrictionIndex);
+            Restricciones.Add(restriccion.Indice, restriccion);
         }
-
-        public void AgregarRestriccion(IEnumerable<FinalTerm> terms, string nombreRestriccion)
+        public void AddRestriction(FinalTerm terms, string nombreRestriccion, Action<double> bindResult)
         {
-            foreach (var t in terms)
-            {
-                Restricciones.Add(new Restriccion(t, nombreRestriccion, ++RestrictionIndex));
-            }
+            var restriccion = new Restriccion(terms, nombreRestriccion, ++RestrictionIndex, bindResult);
+            Restricciones.Add(restriccion.Indice, restriccion);
+        }
+        public void AddRestriction(FinalTerm terms, string nombreRestriccion, Action<double> bindResult, Action<double, double, double> bindDuals)
+        {
+            var restriccion = new Restriccion(terms, nombreRestriccion, ++RestrictionIndex, bindResult, bindDuals);
+            Restricciones.Add(restriccion.Indice, restriccion);
         }
 
         public Term Restar<T>(IEnumerable<Variable<T>> variables)
@@ -127,19 +141,42 @@ namespace SziCom.LpSolve
 
                 ///Importante: El resultado no se escala, porque al escalar los coeficientes de las variables 
                 ///y de la fucion objetivo, el resutaldo de la funcion objetivo ya esta correcto.
-                var r = new Result(ToLpSolveContraintType(lp.solve()), Math.Round(lp.get_objective(), 2));
-                Double[] result = new Double[lp.get_Ncolumns()];
-                Double[] from = new Double[lp.get_Ncolumns()];
-                Double[] till = new Double[lp.get_Ncolumns()];
 
-                lp.get_variables(result);
-                lp.get_sensitivity_obj(from, till);
+                //lp.set_presolve()
+
+                var result = new Result(ToLpSolveContraintType(lp.solve()), Math.Round(lp.get_objective(), 2));
+
+                Double[] varResult = new Double[lp.get_Ncolumns()];
+                Double[] varFrom = new Double[lp.get_Ncolumns()];
+                Double[] varTill = new Double[lp.get_Ncolumns()];
+
+                Double[] constraintResult = new Double[lp.get_Nrows()];
+
+                Double[] duals = new Double[lp.get_Nrows() + lp.get_Ncolumns()];
+                Double[] fromDuals = new Double[lp.get_Nrows() + lp.get_Ncolumns()];
+                Double[] tillDuals = new Double[lp.get_Nrows() + lp.get_Ncolumns()];
+
+                lp.get_variables(varResult);
+                lp.get_constraints(constraintResult);
+                lp.get_sensitivity_obj(varFrom, varTill);
+                lp.get_sensitivity_rhs(duals, fromDuals, tillDuals);
 
                 foreach (var v in Variables)
                 {
-                    v.Value.SetResult(result[v.Key - 1] / scale, from[v.Key - 1] / scale, till[v.Key - 1] / scale);
+                    v.Value.SetResult(varResult[v.Key - 1] / scale,
+                                      varFrom[v.Key - 1] / scale,
+                                      varTill[v.Key - 1] / scale,
+                                      duals[lp.get_Nrows() + v.Key - 1] / scale,
+                                      fromDuals[lp.get_Nrows() + v.Key - 1] / scale,
+                                      tillDuals[lp.get_Nrows() + v.Key - 1] / scale);
                 }
-                return r;
+
+                foreach (var r in Restricciones)
+                {
+                    r.Value.SetResult(constraintResult[r.Key - 1] / scale, duals[r.Key - 1] / scale, fromDuals[r.Key - 1] / scale, tillDuals[r.Key - 1] / scale);
+                }
+
+                return result;
             }
         }
 
@@ -190,15 +227,15 @@ namespace SziCom.LpSolve
         {
             foreach (var r in Restricciones)
             {
-                Int32[] variables = r.Termino.GetVariables();
-                Double[] coeficientes = r.Termino.GetCoeficientes().Select(t => t / scale).ToArray();
+                Int32[] variables = r.Value.Termino.GetVariables();
+                Double[] coeficientes = r.Value.Termino.GetCoeficientes().Select(t => t / scale).ToArray();
 
-                if (!lp.add_constraintex(r.Termino.Count, coeficientes, variables, ToLpSolveContraintType(r.Termino.Restriction), r.Termino.RestrictionValue - r.Termino.GetAdding()))
+                if (!lp.add_constraintex(r.Value.Termino.Count, coeficientes, variables, ToLpSolveContraintType(r.Value.Termino.Restriction), r.Value.Termino.RestrictionValue - r.Value.Termino.GetAdding()))
                 {
-                    throw new LpSolveExeption($"Restricciones Factory: Error al agregar la restriccion: {r.Nombre}");
+                    throw new LpSolveExeption($"Restricciones Factory: Error al agregar la restriccion: {r.Value.Nombre}");
                 }
 
-                lp.set_row_name(r.Indice, r.Nombre);
+                lp.set_row_name(r.Key, r.Value.Nombre);
             }
         }
 

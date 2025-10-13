@@ -21,17 +21,24 @@ namespace SziCom.LpSolve
             this.Binary = binary;
         }
 
-        internal virtual void SetResult(double result, double from, double till)
+        internal virtual void SetResult(double result, double from, double till, double dual, double dualFrom, double dualTill)
         {
             this.Result = result;
             this.From = from;
             this.Till = till;
-            
+            this.DualValue = dual;
+            this.DualFrom = dualFrom;
+            this.DualTill = dualTill;
         }
 
         public double Result { get; private set; }
-        public double Till { get; private set; }
+        
         public double From { get; private set; }
+        public double Till { get; private set; }
+
+        public double DualValue { get; private set; }
+        public double DualFrom { get; private set; }
+        public double DualTill { get; private set; }
 
         public bool Binary { get; private set; }
         
