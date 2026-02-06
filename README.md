@@ -24,7 +24,7 @@ For materials, the manufacturer has 750 m2 of cotton textile and 1000 m^2 of pol
     m.AddRestriction(x >= 0, "Positive Pant");
     m.AddRestriction(y >= 0, "Positive Jackets");
 
-    m.AddRestriction(x + 1.5 * y <= 750, "Contton Textile");
+    m.AddRestriction(x + 1.5 * y <= 750, "Cotton Textile");
     m.AddRestriction(2 * x + y <= 1000, "Polyester");
     
     m.AddObjetiveFuction(objetive, LinearOptmizationType.Maximizar);
