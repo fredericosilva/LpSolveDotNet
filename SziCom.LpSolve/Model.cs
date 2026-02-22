@@ -94,11 +94,11 @@ namespace SziCom.LpSolve
             return result;
         }
 
-        public void AddObjetiveFuction(Term term, string nombreRestriccion, LinearOptmizationType funcion)
+        public void AddObjetiveFunction(Term term, string nombreRestriccion, LinearOptmizationType funcion)
         {
             this.Objetivo = new LinearOptimizacionFunction(term, nombreRestriccion, funcion);
         }
-        public void AddObjetiveFuction(Term term, LinearOptmizationType funcion)
+        public void AddObjetiveFunction(Term term, LinearOptmizationType funcion)
         {
             this.Objetivo = new LinearOptimizacionFunction(term, "OptimizationFunctionName", funcion);
         }

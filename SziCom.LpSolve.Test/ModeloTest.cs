@@ -34,7 +34,7 @@ namespace UnitTestProject1
             m.AddRestriction(r3, "R3", result => r3Result = result, (dual, dualFrom, dualTill) => { r3Dual = dual; r3DualFrom = dualFrom; r3DualTill = dualTill; });
             m.AddRestriction(r4, "R4", result => r4Result = result, (dual, dualFrom, dualTill) => { r4Dual = dual; r4DualFrom = dualFrom; r4DualTill = dualTill; });
 
-            m.AddObjetiveFuction(objetivo, "Max", LinearOptmizationType.Maximizar);
+            m.AddObjetiveFunction(objetivo, "Max", LinearOptmizationType.Maximizar);
 
             var modelResult = m.Run();
 
@@ -74,7 +74,7 @@ namespace UnitTestProject1
             m2.AddRestriction(r2, "R2", result => r2Result = result, (dual, dualFrom, dualTill) => { r2Dual = dual; r2DualFrom = dualFrom; r2DualTill = dualTill; });
             m2.AddRestriction(r3, "R3", result => r3Result = result, (dual, dualFrom, dualTill) => { r3Dual = dual; r3DualFrom = dualFrom; r3DualTill = dualTill; });
             m2.AddRestriction(r4, "R4", result => r4Result = result, (dual, dualFrom, dualTill) => { r4Dual = dual; r4DualFrom = dualFrom; r4DualTill = dualTill; });
-            m2.AddObjetiveFuction(objetivo, "Max", LinearOptmizationType.Maximizar);
+            m2.AddObjetiveFunction(objetivo, "Max", LinearOptmizationType.Maximizar);
             
             modelResult = m2.Run();
             
@@ -103,7 +103,7 @@ namespace UnitTestProject1
             m1.AddRestriction(demand1, "Demand", r => demandResult1 = r);
             m1.AddRestriction(nonNegX1, "NonNegX1");
             m1.AddRestriction(nonNegY1, "NonNegY1");
-            m1.AddObjetiveFuction(objective1, "Min", LinearOptmizationType.Minimizar);
+            m1.AddObjetiveFunction(objective1, "Min", LinearOptmizationType.Minimizar);
 
             var result1 = m1.Run();
 
@@ -138,7 +138,7 @@ namespace UnitTestProject1
             m2.AddRestriction(demand2, "Demand", r => demandResult2 = r);
             m2.AddRestriction(nonNegX2, "NonNegX1");
             m2.AddRestriction(nonNegY2, "NonNegY1");
-            m2.AddObjetiveFuction(objective2, "Min", LinearOptmizationType.Minimizar);
+            m2.AddObjetiveFunction(objective2, "Min", LinearOptmizationType.Minimizar);
 
             var result2 = m2.Run();
 
@@ -185,7 +185,7 @@ namespace UnitTestProject1
             m1.AddRestriction(r5, "NonNegX2");
             m1.AddRestriction(r6, "NonNegX3");
 
-            m1.AddObjetiveFuction(objetivo, "Min", LinearOptmizationType.Minimizar);
+            m1.AddObjetiveFunction(objetivo, "Min", LinearOptmizationType.Minimizar);
 
             var result1 = m1.Run();
 
@@ -223,7 +223,7 @@ namespace UnitTestProject1
             m2.AddRestriction(r5_m2, "NonNegX2");
             m2.AddRestriction(r6_m2, "ForceX3Min"); // This forces x3 into solution
 
-            m2.AddObjetiveFuction(objetivo_m2, "Min", LinearOptmizationType.Minimizar);
+            m2.AddObjetiveFunction(objetivo_m2, "Min", LinearOptmizationType.Minimizar);
 
             var result2 = m2.Run();
 
@@ -260,7 +260,7 @@ namespace UnitTestProject1
             m1.AddRestriction(demand1, "Demand");
             m1.AddRestriction(nonNegX1_1, "NonNegX1");
             m1.AddRestriction(nonNegX2_1, "NonNegX2");
-            m1.AddObjetiveFuction(objective1, "Min", LinearOptmizationType.Minimizar);
+            m1.AddObjetiveFunction(objective1, "Min", LinearOptmizationType.Minimizar);
 
             var result1 = m1.Run();
 
@@ -291,7 +291,7 @@ namespace UnitTestProject1
             m2.AddRestriction(demand2, "Demand");
             m2.AddRestriction(nonNegX1_2, "NonNegX1");
             m2.AddRestriction(nonNegX2_2, "NonNegX2");
-            m2.AddObjetiveFuction(objective2, "Min", LinearOptmizationType.Minimizar);
+            m2.AddObjetiveFunction(objective2, "Min", LinearOptmizationType.Minimizar);
 
             var result2 = m2.Run();
 
@@ -329,7 +329,7 @@ namespace UnitTestProject1
             m.AddRestriction(r3, "R1");
             m.AddRestriction(r4, "R1");
 
-            m.AddObjetiveFuction(objetivo, "Max", LinearOptmizationType.Maximizar);
+            m.AddObjetiveFunction(objetivo, "Max", LinearOptmizationType.Maximizar);
 
             m.Run();
 
@@ -356,7 +356,7 @@ namespace UnitTestProject1
             m.AddRestriction(r3, "R1");
             m.AddRestriction(r4, "R1");
 
-            m.AddObjetiveFuction(objetivo, "Max", LinearOptmizationType.Maximizar);
+            m.AddObjetiveFunction(objetivo, "Max", LinearOptmizationType.Maximizar);
 
             m.Run();
 
@@ -383,7 +383,7 @@ namespace UnitTestProject1
             m.AddRestriction(r3, "R1");
             m.AddRestriction(r4, "R1");
 
-            m.AddObjetiveFuction(objetivo, "Max", LinearOptmizationType.Maximizar);
+            m.AddObjetiveFunction(objetivo, "Max", LinearOptmizationType.Maximizar);
 
             m.Run(100);
 
@@ -415,7 +415,7 @@ namespace UnitTestProject1
 
             m.AddRestriction(r4, "R1");
 
-            m.AddObjetiveFuction(objetivo, "Max", LinearOptmizationType.Maximizar);
+            m.AddObjetiveFunction(objetivo, "Max", LinearOptmizationType.Maximizar);
 
             m.Run();
 
@@ -448,7 +448,7 @@ namespace UnitTestProject1
 
             m.AddRestriction(x + 1.5 * y <= 750, "Contton Textile");
             m.AddRestriction(2 * x + y <= 1000, "Polyester");
-            m.AddObjetiveFuction(objetive, LinearOptmizationType.Maximizar);
+            m.AddObjetiveFunction(objetive, LinearOptmizationType.Maximizar);
             var r = m.Run(100);
 
 
@@ -477,7 +477,7 @@ namespace UnitTestProject1
             m.AddRestriction(x - 1000 * binaryX <= 0, "Contton Textile");
             m.AddRestriction(x + 1000 * binaryY >= 10, "Polyester");
             m.AddRestriction(binaryX + binaryY == 1, "Polyester");
-            m.AddObjetiveFuction(objetive, LinearOptmizationType.Maximizar);
+            m.AddObjetiveFunction(objetive, LinearOptmizationType.Maximizar);
             var r = m.Run();
 
 
